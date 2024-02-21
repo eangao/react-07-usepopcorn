@@ -1,4 +1,5 @@
 import { useState } from "react";
+import PropTypes from "prop-types";
 
 const containerStyle = {
   display: "flex",
@@ -8,6 +9,29 @@ const containerStyle = {
 
 const starContainerStyle = {
   display: "flex",
+};
+
+// Use Typescript for better apps to specify a number.
+// but in this course use javascript
+
+// But as I said in the very beginning,
+// I will not start using this in all components from now on.
+// So this was mostly just to show you
+// that you can use this yourself
+// in case that you have some component like this
+// which you want to make highly reusable
+// across multiple applications
+// or even just inside one application.
+// And if at the same time you don't want to switch
+// to TypeScript,
+StarRating.prototype = {
+  maxRating: PropTypes.number,
+  defaultRating: PropTypes.number,
+  color: PropTypes.string,
+  size: PropTypes.number,
+  messages: PropTypes.array,
+  className: PropTypes.string,
+  onSetRating: PropTypes.func,
 };
 
 export default function StarRating({
