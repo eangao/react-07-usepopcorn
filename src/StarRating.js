@@ -24,6 +24,7 @@ const starContainerStyle = {
 // or even just inside one application.
 // And if at the same time you don't want to switch
 // to TypeScript,
+
 StarRating.prototype = {
   maxRating: PropTypes.number,
   defaultRating: PropTypes.number,
@@ -41,14 +42,14 @@ export default function StarRating({
   className = "",
   messages = [],
   defaultRating = 0,
-  onSetRating,
+  // onSetRating,
 }) {
   const [rating, setRating] = useState(defaultRating);
   const [tempRating, setTempRating] = useState(0);
 
   function handleRating(rating) {
     setRating(rating);
-    onSetRating(rating);
+    // onSetRating(rating);
   }
 
   const textStyle = {
