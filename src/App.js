@@ -100,12 +100,18 @@ export default function App() {
 
   useEffect(
     function () {
+      //       And again, this is actually a browser API.
+      // So this has nothing to do with React
+      // but with the browser itself.
+      const controller = new AbortController();
+
       async function fetchMovies() {
         try {
           setIsLoading(true);
           setError("");
           const res = await fetch(
-            `http://www.omdbapi.com/?apikey=${KEY}&s=${query}`
+            `http://www.omdbapi.com/?apikey=${KEY}&s=${query}`,
+            { signal: controller.signal }
           );
 
           if (!res.ok)
@@ -116,8 +122,13 @@ export default function App() {
           if (data.Response === "False") throw new Error("Movie not found");
 
           setMovies(data.Search);
+          setError("");
         } catch (err) {
-          setError(err.message);
+          console.log(err.message);
+
+          if (err.name !== "AbortError") {
+            setError(err.message);
+          }
         } finally {
           setIsLoading(false);
         }
@@ -130,6 +141,28 @@ export default function App() {
       }
 
       fetchMovies();
+
+      //clean up effect
+      //       And so what that means, is that each time
+      // that there is a new keystroke, so a new re-render,
+      // our controller will abort the current fetch request.
+      // And so that is exactly what we want, right.
+      // So we want to cancel the current request each time
+      // that a new one comes in.
+      // And so that is exactly the point in time
+      // in which our cleanup function gets called.
+      return function () {
+        controller.abort();
+      };
+
+      //       And so, if at some point in the future,
+      // you are going to do your own HTP requests
+      // in an effect like this, make sure to always clean up
+      // after your fetch requests,
+      // in case that you have a situation
+      // where many requests can be fired off very rapidly,
+      // one after another.
+      // Which is exactly the situation that we have here.
     },
     [query]
   );
