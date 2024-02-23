@@ -55,7 +55,7 @@ const average = (arr) =>
 const KEY = "cd8436d0";
 
 export default function App() {
-  const [query, setQuery] = useState("inception");
+  const [query, setQuery] = useState("");
   const [movies, setMovies] = useState([]);
   const [watched, setWatched] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -98,6 +98,19 @@ export default function App() {
     setWatched(watched.filter((movie) => movie.imdbID !== id));
   }
 
+  ///////////////////////////////////////
+  //
+  ///////////////////////////////////////
+  // useEffect(function () {
+  //   document.addEventListener("keydown", function (e) {  //
+  //     if (e.code === "Escape") {
+  //       handleCloseMovie();
+  //       console.log("CLOSING");
+  //     }
+  //   });
+  // }, []);
+  ////////////////////////////////////////////
+
   useEffect(
     function () {
       //       And again, this is actually a browser API.
@@ -124,9 +137,8 @@ export default function App() {
           setMovies(data.Search);
           setError("");
         } catch (err) {
-          console.log(err.message);
-
           if (err.name !== "AbortError") {
+            console.log(err.message);
             setError(err.message);
           }
         } finally {
@@ -140,6 +152,7 @@ export default function App() {
         return;
       }
 
+      handleCloseMovie();
       fetchMovies();
 
       //clean up effect
@@ -358,6 +371,32 @@ function MovieDetails({ selectedId, onCloseMovie, onAddWatched, watched }) {
     onCloseMovie();
   }
 
+  //   so we are really doing basically now some DOM manipulation.
+  // And so we are stepping really outside of React here,
+  // which is the reason why the React team
+  // also calls the useEffect hook here an escape hatch.
+  // So basically a way of escaping
+  // having to write all the code using the React way.
+  useEffect(
+    function () {
+      function callback(e) {
+        //       when I hit the Escape key.
+        // And indeed, the movie here was closed
+        if (e.code === "Escape") {
+          onCloseMovie();
+        }
+      }
+
+      document.addEventListener("keydown", callback);
+
+      //clean up effect
+      return function () {
+        document.removeEventListener("keydown", callback);
+      };
+    },
+    [onCloseMovie]
+  );
+
   useEffect(
     function () {
       async function getMovieDetails() {
@@ -381,7 +420,7 @@ function MovieDetails({ selectedId, onCloseMovie, onAddWatched, watched }) {
     function () {
       if (!title) return;
       document.title = `Movie | ${title}`;
-      console.log(`Clean up effect for movie ${title}`);
+      // console.log(`Clean up effect for movie ${title}`);
 
       //clean up effect
       return function () {
