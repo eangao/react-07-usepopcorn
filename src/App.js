@@ -335,8 +335,6 @@ function MovieDetails({ selectedId, onCloseMovie, onAddWatched, watched }) {
 
         const data = await res.json();
 
-        console.log(data);
-
         setMovie(data);
         setIsLoading(false);
       }
@@ -349,8 +347,13 @@ function MovieDetails({ selectedId, onCloseMovie, onAddWatched, watched }) {
   useEffect(
     function () {
       if (!title) return;
-
       document.title = `Movie | ${title}`;
+      console.log(`Clean up effect for movie ${title}`);
+
+      //clean up effect
+      return function () {
+        document.title = "usePopcorn";
+      };
     },
     [title]
   );
