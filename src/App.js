@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import StarRating from "./StarRating";
 import { useMovies } from "./useMovies";
+import { useLocalStorageState } from "./useLocalStorageState";
 
 const average = (arr) =>
   arr.reduce((acc, cur, i, arr) => acc + cur / arr.length, 0);
@@ -14,38 +15,7 @@ export default function App() {
 
   //custom hook
   const { movies, isLoading, error } = useMovies(query);
-
-  // const [watched, setWatched] = useState([]);
-  //////////////
-  //   So what we're going to do now is to,
-  // instead of just passing in a value
-  // is to pass in a callback function.
-  // And so that's because the useState hook
-  // also accepts a callback function instead
-  // of just a single value.
-  // And so we can then initialize the state
-  // with whatever value this callback function will return.
-
-  //   And this function here actually needs to be a pure function
-  // and it cannot receive any arguments.
-  // So passing arguments here is not going to work.
-  // So just a very simple pure function that returns something
-  // and that something will be used by React
-  // as the initial state.
-  // And also just like the values that we pass in,
-  // React will only consider this function here
-  // on the initial render.
-  // So this function is only executed once on the initial render
-  // and is simply ignored on subsequent re-renders.
-  const [watched, setWatched] = useState(function () {
-    const storedValue = localStorage.getItem("watched");
-
-    //
-    // return JSON.parse(storedValue);
-
-    //check if have storedValue in localstorage
-    return storedValue ? JSON.parse(storedValue) : [];
-  });
+  const [watched, setWatched] = useLocalStorageState([], "watched");
 
   function handleSelectMovie(id) {
     setSelectedId((selectedId) => (id === selectedId ? null : id));
@@ -84,17 +54,6 @@ export default function App() {
   function handleDeleteWatched(id) {
     setWatched(watched.filter((movie) => movie.imdbID !== id));
   }
-
-  useEffect(
-    function () {
-      //       And now we don't have to create any new array
-      // because this effect here will only run after the movies
-      // have already been updated.
-      // So after watched is already the new state.
-      localStorage.setItem("watched", JSON.stringify(watched));
-    },
-    [watched]
-  );
 
   return (
     <>
