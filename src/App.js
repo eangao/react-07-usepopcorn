@@ -365,6 +365,28 @@ function MovieDetails({ selectedId, onCloseMovie, onAddWatched, watched }) {
   const [isLoading, setIsLoading] = useState(false);
   const [userRating, setUserRating] = useState("");
 
+  // So let's just recap what we did here
+  // and why this works.
+  // So we created this ref here where we want
+  // to store the amount of clicks that happened on the rating
+  // before the movie is added,
+  // but we don't want to render that information
+  // onto the user interface.
+  // Or in other words, we do not want to create a re-render.
+  // And so that's why a ref is perfect for this.
+  // So then each time the user rating was updated,
+  // the component was re-rendered.
+  // And so then after that re-render, this effect was executed
+  // which means that after the rating had been updated,
+  const countRef = useRef(0);
+
+  useEffect(
+    function () {
+      if (userRating) countRef.current++;
+    },
+    [userRating]
+  );
+
   const isWatched = watched.map((movie) => movie.imdbID).includes(selectedId);
 
   const watchedUserRating = watched.find(
@@ -432,6 +454,7 @@ function MovieDetails({ selectedId, onCloseMovie, onAddWatched, watched }) {
       imdbRating: Number(imdbRating),
       runtime: Number(runtime.split(" ").at(0)),
       userRating,
+      countRatingDecisions: countRef.current,
     };
 
     onAddWatched(newWatchedMovie);
