@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import StarRating from "./StarRating";
 import { useMovies } from "./useMovies";
 import { useLocalStorageState } from "./useLocalStorageState";
+import { useKey } from "./useKey";
 
 const average = (arr) =>
   arr.reduce((acc, cur, i, arr) => acc + cur / arr.length, 0);
@@ -140,67 +141,11 @@ function Search({ query, setQuery }) {
   // ref in the first step
   const inputEl = useRef(null);
 
-  // useEffect(function () {
-  //   //     However, as we learned at the very beginning,
-  //   // React is all about being declarative.
-  //   // And so manually selecting a dom element like this
-  //   // is not really the React way of doing things.
-  //   // So it's not in line with the rest of our React code.
-  //   // So, in React, we really don't want
-  //   // to manually add event listeners, like this,
-  //   // and also having to add classes or IDs
-  //   // just for the purpose of selecting is not really nice.
-  //   // And, again, not really the React way of doing things.
-  //   const el = document.querySelector(".search");
-  //   console.log(el);
-  //   el.focus();
-  // }, []);
-
-  //   And so now in order to use this ref in the third step,
-  // we can use again the useEffect hook.
-  // So a new function that simply runs on mount.
-  // So we need to use an effect in order to use a ref
-  // that contains a DOM element like this one
-  // because the ref only gets added to this DOM element here
-  // after the DOM has already loaded.
-  // And so therefore we can only access it in effect
-  // which also runs after the DOM has been loaded.
-  useEffect(
-    function () {
-      //DOM Element
-      // console.log(inputEl.current);
-
-      function callback(e) {
-        if (e.code === "Enter") {
-          //         There's just one final problem,
-          // which is let's say that I'm writing this
-          // and then I hit the Enter key again
-          // and so this will then delete the text that we have.
-          // So basically we don't want all of this here to happen
-          // when the element is already focused,
-          // so when it's already active.
-          // But luckily for us
-          // we can easily check which element is currently active
-          // thanks to the document.activeElement property.
-          // And so thanks to that we can say
-          // if document.activeElement
-          // which again is the element that is currently being focused.
-          // So if that is equal to our input element,
-          // so inputEl.current then just return.
-          if (document.activeElement === inputEl.current) return;
-
-          inputEl.current.focus();
-          setQuery("");
-        }
-      }
-
-      document.addEventListener("keydown", callback);
-
-      //clean up
-      return () => document.addEventListener("keydown", callback);
-    },
-    [setQuery]
-  );
+  useKey("Enter", function () {
+    if (document.activeElement === inputEl.current) return;
+    inputEl.current.focus();
+    setQuery("");
+  });
 
   return (
     <input
@@ -392,31 +337,7 @@ function MovieDetails({ selectedId, onCloseMovie, onAddWatched, watched }) {
     // setAvgRating((avgRating) => (avgRating + userRating) / 2);
   }
 
-  //   so we are really doing basically now some DOM manipulation.
-  // And so we are stepping really outside of React here,
-  // which is the reason why the React team
-  // also calls the useEffect hook here an escape hatch.
-  // So basically a way of escaping
-  // having to write all the code using the React way.
-  useEffect(
-    function () {
-      function callback(e) {
-        //       when I hit the Escape key.
-        // And indeed, the movie here was closed
-        if (e.code === "Escape") {
-          onCloseMovie();
-        }
-      }
-
-      document.addEventListener("keydown", callback);
-
-      //clean up effect
-      return function () {
-        document.removeEventListener("keydown", callback);
-      };
-    },
-    [onCloseMovie]
-  );
+  useKey("Escape", onCloseMovie);
 
   useEffect(
     function () {
