@@ -1,6 +1,53 @@
 import { useEffect, useState } from "react";
 import StarRating from "./StarRating";
 
+const tempMovieData = [
+  {
+    imdbID: "tt1375666",
+    Title: "Inception",
+    Year: "2010",
+    Poster:
+      "https://m.media-amazon.com/images/M/MV5BMjAxMzY3NjcxNF5BMl5BanBnXkFtZTcwNTI5OTM0Mw@@._V1_SX300.jpg",
+  },
+  {
+    imdbID: "tt0133093",
+    Title: "The Matrix",
+    Year: "1999",
+    Poster:
+      "https://m.media-amazon.com/images/M/MV5BNzQzOTk3OTAtNDQ0Zi00ZTVkLWI0MTEtMDllZjNkYzNjNTc4L2ltYWdlXkEyXkFqcGdeQXVyNjU0OTQ0OTY@._V1_SX300.jpg",
+  },
+  {
+    imdbID: "tt6751668",
+    Title: "Parasite",
+    Year: "2019",
+    Poster:
+      "https://m.media-amazon.com/images/M/MV5BYWZjMjk3ZTItODQ2ZC00NTY5LWE0ZDYtZTI3MjcwN2Q5NTVkXkEyXkFqcGdeQXVyODk4OTc3MTY@._V1_SX300.jpg",
+  },
+];
+
+const tempWatchedData = [
+  {
+    imdbID: "tt1375666",
+    Title: "Inception",
+    Year: "2010",
+    Poster:
+      "https://m.media-amazon.com/images/M/MV5BMjAxMzY3NjcxNF5BMl5BanBnXkFtZTcwNTI5OTM0Mw@@._V1_SX300.jpg",
+    runtime: 148,
+    imdbRating: 8.8,
+    userRating: 10,
+  },
+  {
+    imdbID: "tt0088763",
+    Title: "Back to the Future",
+    Year: "1985",
+    Poster:
+      "https://m.media-amazon.com/images/M/MV5BZmU0M2Y1OGUtZjIxNi00ZjBkLTg1MjgtOWIyNThiZWIwYjRiXkEyXkFqcGdeQXVyMTQxNzMzNDI@._V1_SX300.jpg",
+    runtime: 116,
+    imdbRating: 8.5,
+    userRating: 9,
+  },
+];
+
 const average = (arr) =>
   arr.reduce((acc, cur, i, arr) => acc + cur / arr.length, 0);
 
@@ -10,37 +57,30 @@ const KEY = "cd8436d0";
 export default function App() {
   const [query, setQuery] = useState("");
   const [movies, setMovies] = useState([]);
+  const [watched, setWatched] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [selectedId, setSelectedId] = useState(null);
 
-  // const [watched, setWatched] = useState([]);
-  //////////////
-  //   So what we're going to do now is to,
-  // instead of just passing in a value
-  // is to pass in a callback function.
-  // And so that's because the useState hook
-  // also accepts a callback function instead
-  // of just a single value.
-  // And so we can then initialize the state
-  // with whatever value this callback function will return.
+  /*
+  useEffect(function () {
+    console.log("after initial render");
+  }, []);
 
-  //   And this function here actually needs to be a pure function
-  // and it cannot receive any arguments.
-  // So passing arguments here is not going to work.
-  // So just a very simple pure function that returns something
-  // and that something will be used by React
-  // as the initial state.
-  // And also just like the values that we pass in,
-  // React will only consider this function here
-  // on the initial render.
-  // So this function is only executed once on the initial render
-  // and is simply ignored on subsequent re-renders.
-  const [watched, setWatched] = useState(function () {
-    const storedValue = localStorage.getItem("watched");
-
-    return JSON.parse(storedValue);
+  useEffect(function () {
+    console.log("after every render");
   });
+
+  useEffect(
+    function () {
+      console.log("D");
+    },
+    [query]
+  );
+
+  console.log("During render");
+
+  */
 
   function handleSelectMovie(id) {
     setSelectedId((selectedId) => (id === selectedId ? null : id));
@@ -52,28 +92,6 @@ export default function App() {
 
   function handleAddWatched(movie) {
     setWatched((watched) => [...watched, movie]);
-
-    //     Now here, we cannot simply use the watched array
-    // like this because it has just been updated here.
-    // And so as we already know
-    // this updating happens in an asynchronous way.
-    // And so therefore right here, this is still stale state.
-    // So it's basically still the old version
-    // before a new movie has been added.
-    // And so we need to basically do the same thing as here.
-    // So we need to build a new array based on the watched
-    // so the current state plus the new movie.
-
-    //     But as I was saying
-    // we can also do it right inside in effect.
-    // So instead of doing it here in the event handler function,
-    // and we will actually do it in an effect
-    // instead of here in this event handler function
-    // because later in the section we will want to make
-    // this storing data into local storage, reusable.
-    // So let's just comment this out
-    ////////
-    // localStorage.setItem("watched", JSON.stringify([...watched, movie]));
   }
 
   function handleDeleteWatched(id) {
@@ -82,17 +100,9 @@ export default function App() {
 
   useEffect(
     function () {
-      //       And now we don't have to create any new array
-      // because this effect here will only run after the movies
-      // have already been updated.
-      // So after watched is already the new state.
-      localStorage.setItem("watched", JSON.stringify(watched));
-    },
-    [watched]
-  );
-
-  useEffect(
-    function () {
+      //       And again, this is actually a browser API.
+      // So this has nothing to do with React
+      // but with the browser itself.
       const controller = new AbortController();
 
       async function fetchMovies() {
@@ -132,9 +142,27 @@ export default function App() {
       handleCloseMovie();
       fetchMovies();
 
+      //clean up effect
+      //       And so what that means, is that each time
+      // that there is a new keystroke, so a new re-render,
+      // our controller will abort the current fetch request.
+      // And so that is exactly what we want, right.
+      // So we want to cancel the current request each time
+      // that a new one comes in.
+      // And so that is exactly the point in time
+      // in which our cleanup function gets called.
       return function () {
         controller.abort();
       };
+
+      //       And so, if at some point in the future,
+      // you are going to do your own HTP requests
+      // in an effect like this, make sure to always clean up
+      // after your fetch requests,
+      // in case that you have a situation
+      // where many requests can be fired off very rapidly,
+      // one after another.
+      // Which is exactly the situation that we have here.
     },
     [query]
   );
@@ -314,45 +342,6 @@ function MovieDetails({ selectedId, onCloseMovie, onAddWatched, watched }) {
     Genre: genre,
   } = movie;
 
-  /*****************************/
-  // this will violate the hooks rules
-  // if (imdbRating > 8) [isTop, setIsTop] = useState(true);
-  /**************************** */
-  // const [isTop, setIsTop] = useState(imdbRating > 8);
-  // console.log(isTop);
-
-  // useEffect(
-  //   function () {
-  //     setIsTop(imdbRating > 8);
-  //   },
-  //   [imdbRating]
-  // );
-  /******************************** */
-  //   And so this is the power
-  // and one of the great advantages of derived state,
-  // which is that it updates
-  // basically as the component gets re-rendered.
-  // And this is really as simple as it can get, right?
-  // So this is pretty important to understand
-  // so that the initial state value here
-  // is only been looked at by React in the very beginning.
-  // So only on component mount.
-  // So never forget that.
-  ////////////
-  // const isTop = imdbRating > 8;
-  // console.log(isTop);
-
-  //   to give you yet another example
-  // or another proof that updating state really is asynchronous
-  // and that we need to use a colic function to update state
-  // in certain situations.
-  // So let's say that when we add a new movie
-  // to our watch list right here
-  // we want it to display the average of the rating that we gave
-  // and the rating that is coming from IMDB.
-  // So we want that to be displayed right here
-  // const [avgRating, setAvgRating] = useState(0);
-
   function handleAdd() {
     const newWatchedMovie = {
       imdbID: selectedId,
@@ -365,26 +354,8 @@ function MovieDetails({ selectedId, onCloseMovie, onAddWatched, watched }) {
     };
 
     onAddWatched(newWatchedMovie);
+
     onCloseMovie();
-
-    // setAvgRating(Number(imdbRating));
-
-    //     So it's asynchronous state setting,
-    // which means that at this point here
-    // the avgRating has not been set yet.
-    // So it's still at zero,
-    // which is the initial value right here.
-    // And so because of that,
-    // we say that the avgRating state is stale at this point.
-    ////////
-    //setAvgRating((avgRating + userRating) / 2);
-    //////////////////////////
-
-    //     But luckily for us, we already know how to solve this,
-    // which is by passing in a callback function.
-    // And so that callback will get access to the current value.
-    /////////
-    // setAvgRating((avgRating) => (avgRating + userRating) / 2);
   }
 
   //   so we are really doing basically now some DOM manipulation.
@@ -469,8 +440,6 @@ function MovieDetails({ selectedId, onCloseMovie, onAddWatched, watched }) {
               </p>
             </div>
           </header>
-
-          {/* <p>{avgRating}</p> */}
 
           <section>
             <div className="rating">
